@@ -7,7 +7,7 @@ const clients = [];
 for (let i = 1; i <= 10; i++) {
     const client = new Client({
         puppeteer: {
-            executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+            executablePath: process.env.CHROME_PATH,
         },
         authStrategy: new LocalAuth({
             clientId: `whatsappClient${i}`,  // Unique ID for each number
