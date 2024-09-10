@@ -27,17 +27,23 @@ async function authorize(req, res) {
         const token = fs.readFileSync(TOKEN_PATH);
         oAuth2Client.setCredentials(JSON.parse(token));
     } else {
-        // If no token, generate the authorization URL and redirect the user
+        // If no token, generate the authorization URL and log it to the console for manual copying
         const authUrl = oAuth2Client.generateAuthUrl({
             access_type: 'offline',
             scope: SCOPES,
         });
-        console.log('Redirecting to Google OAuth...');
-        return res.redirect(authUrl); // Redirect to Google's OAuth 2.0 consent page
+        
+        // Print the URL to the console
+        console.log('Please visit this URL to authorize the app:');
+        console.log(authUrl);
+
+        // Optionally, you can also return this link in the response (useful if you want to show it in a UI):
+        return res.status(200).send(`Please visit this URL to authorize the app: <a href="${authUrl}" target="_blank">${authUrl}</a>`);
     }
 
     return oAuth2Client;
 }
+
 
 // Fetch data from the Google Sheet
 async function fetchDataFromSheet(spreadsheetId, range) {
