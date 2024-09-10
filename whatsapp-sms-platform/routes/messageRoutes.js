@@ -64,18 +64,23 @@ const RANGE = 'גיליון1!A2:E';  // Adjust according to your sheet structure
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 router.post('/send-to-group', authController.verifyToken, upload.single('media'), async (req, res) => {
-    const { index, group, message } = req.body;
+    const { index, groups, message } = req.body;
     const mediaFile = req.file;
 
     try {
         const sheetData = await googleSheetsController.fetchDataFromSheet(SPREADSHEET_ID, RANGE);
 
-        // If group is 0, send to all recipients
-        const recipients = group === '0' 
-            ? sheetData  // Send to all rows
-            : sheetData.filter(row => row[0] === group);  // Otherwise filter by specific group
-
         const messageGroupId = uuidv4();
+
+        // Filter recipients based on the selected groups
+        let recipients = [];
+        if (groups.includes('0')) {
+            // If '0' is present, send to all recipients
+            recipients = sheetData;
+        } else {
+            // Otherwise, filter by selected groups
+            recipients = sheetData.filter(row => groups.includes(row[0]));
+        }
 
         // Use for...of loop for sequential message sending with delay
         for (const recipient of recipients) {

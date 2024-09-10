@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Tabs, Tab, Box, Button, AppBar } from '@mui/material';
 import MessageForm from './MessageForm';
-import Statistics from './Statistics';  // New component to display statistics
+import GroupStatistics from './GroupStatistics';
+import MessageStatistics from './MessageStatistics';
 
 const MainApp = ({ token }) => {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -16,7 +17,7 @@ const MainApp = ({ token }) => {
   };
 
   return (
-    <Box sx={{ maxWidth: '1000px' }}>
+    <Box sx={{ maxWidth: '1000px', minWidth: '60%' }}>
       <AppBar position="static" color="default">
         <Tabs
           value={selectedTab}
@@ -26,12 +27,14 @@ const MainApp = ({ token }) => {
           textColor="primary"
         >
           <Tab label="שלח הודעה" />
-          <Tab label="סטטיסטיקות" />
+          <Tab label="סטטיסטיקות (לפי קבוצות)" />
+          <Tab label="סטטיסטיקות (לפי הודעות)" />
         </Tabs>
       </AppBar>
       <Box p={3}>
         {selectedTab === 0 && <MessageForm token={token} />}
-        {selectedTab === 1 && <Statistics token={token} />}
+        {selectedTab === 1 && <GroupStatistics token={token} />}
+        {selectedTab === 2 && <MessageStatistics token={token} />}
       </Box>
       <Button variant="contained" color="secondary" onClick={handleLogout} fullWidth>
         התנתק

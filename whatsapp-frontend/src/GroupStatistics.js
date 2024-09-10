@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from '@mui/material';
 import axios from 'axios';
 
-const Statistics = ({ token }) => {
+const GroupStatistics = ({ token }) => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState([]);
 
@@ -34,8 +34,8 @@ const Statistics = ({ token }) => {
           <TableRow>
             <TableCell align="right">שם קבוצה</TableCell>
             <TableCell align="right">הודעות שנשלחו</TableCell>
-            <TableCell align="right">קריאות</TableCell>
-            <TableCell align="right">תשובות</TableCell>
+            <TableCell align="right">קריאות (%)</TableCell>
+            <TableCell align="right">תגובות (%)</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -45,8 +45,8 @@ const Statistics = ({ token }) => {
                 {group.group_name}
               </TableCell>
               <TableCell align="right">{group.messages_sent}</TableCell>
-              <TableCell align="right">{group.total_reads}</TableCell>
-              <TableCell align="right">{group.total_replies}</TableCell>
+              <TableCell align="right">{group.avg_read_percentage}%</TableCell>
+              <TableCell align="right">{group.avg_reply_percentage}%</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -55,4 +55,4 @@ const Statistics = ({ token }) => {
   );
 };
 
-export default Statistics;
+export default GroupStatistics;

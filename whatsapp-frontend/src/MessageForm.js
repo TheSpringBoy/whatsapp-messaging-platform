@@ -1,9 +1,10 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useMemo } from 'react';
 import axios from 'axios';
 import {
   Button,
   TextField,
   Select,
+  Chip,
   MenuItem,
   InputLabel,
   FormControl,
@@ -15,6 +16,7 @@ import {
   Typography,
   ThemeProvider,
   createTheme,
+  OutlinedInput,
 } from '@mui/material';
 import { Send as SendIcon } from '@mui/icons-material';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -45,7 +47,7 @@ const theme = createTheme({
 const serverUrl = process.env.REACT_APP_SERVER_URL;
 
 const MessageForm = ({ token }) => {
-  const [group, setGroup] = useState('0');
+  const [selectedGroups, setSelectedGroups] = useState([]); // Managing selected groups
   const [whatsappNumber, setWhatsappNumber] = useState('1');
   const [message, setMessage] = useState('');
   const [file, setFile] = useState(null);
@@ -54,17 +56,48 @@ const MessageForm = ({ token }) => {
   const [sendStatus, setSendStatus] = useState(null);
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState(null);
 
+  // Group options memoized to prevent unnecessary re-renders
+  const groupOptions = useMemo(() => [
+    { value: '0', label: 'כל הקבוצות' },
+    { value: '1', label: 'שלושים רבני עיר מן הערים הגדולות' },
+    { value: '2', label: 'ארבעה עשר רבני עיר מן המועצות המקומיות הגדולות' },
+    { value: '3', label: 'שני רבנים אזוריים מהמועצות האזוריות הגדולות' },
+    { value: '4', label: 'שמונה רבנים מן היישובים הגדולים' },
+    { value: '5', label: 'ארבעה רבני שכונות' },
+    { value: '6', label: 'עשרה דיינים, הוותיקים ביותר' },
+    { value: '7', label: 'הרב הצבאי הראשי והרב הצבאי' },
+    { value: '8', label: 'עשרים וחמישה ראשי הערים הגדולות' },
+    { value: '9', label: 'שישה ראשי המועצות המקומיות הגדולות' },
+    { value: '10', label: 'ארבעה ראשי המועצות האזוריות הגדולות' },
+    { value: '11', label: 'ארבעה עשר ראשי מועצות דתיות של הערים הגדולות' },
+    { value: '12', label: 'ארבעה ראשי מועצות דתיות של המועצות המקומיות הגדולות' },
+    { value: '13', label: 'שני שרים שבחרה הממשלה' },
+    { value: '14', label: 'חמישה חברי הכנסת שבחרה ועדת הכנסת' },
+    { value: '15', label: 'עשר נשות ציבור שמינה השר לשירותי הדת' },
+    { value: '16', label: 'בדיקה' },
+  ], []);
+
+  // Handle file change and media preview
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
-
-    // Create a preview URL for the media file
-    if (selectedFile) {
-      const url = URL.createObjectURL(selectedFile);
-      setMediaPreviewUrl(url);
-    }
+    setMediaPreviewUrl(selectedFile ? URL.createObjectURL(selectedFile) : null);
   };
 
+  // Handle group selection, deselect "All Groups" if any other is selected
+  const handleGroupChange = (event) => {
+    let selectedValues = event.target.value;
+
+    if (selectedValues.includes('0')) {
+      selectedValues = ['0']; // Deselect others when "All Groups" is selected
+    } else {
+      selectedValues = selectedValues.filter((group) => group !== '0'); // Deselect "All Groups" if others are selected
+    }
+
+    setSelectedGroups(selectedValues);
+  };
+
+  // Function to send message
   const handleSendMessage = async (e) => {
     e.preventDefault();
     setSending(true);
@@ -72,7 +105,7 @@ const MessageForm = ({ token }) => {
 
     const formData = new FormData();
     formData.append('index', whatsappNumber);
-    formData.append('group', group);
+    formData.append('groups', selectedGroups);
     formData.append('message', message);
 
     if (file) {
@@ -86,12 +119,11 @@ const MessageForm = ({ token }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      setSending(false);
       setSendStatus('success');
     } catch (error) {
-      setSending(false);
       setSendStatus('error');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -116,13 +148,7 @@ const MessageForm = ({ token }) => {
     )
   ));
 
-  // Text preview function (only affected by message updates)
-  const TextPreview = () => (
-    <Typography variant="body1" style={{ whiteSpace: 'pre-wrap' }}>
-      {message}
-    </Typography>
-  );
-
+  // WhatsApp-style message preview
   const MessagePreview = () => (
     <Paper elevation={3} style={{ padding: '10px', margin: '20px 0', backgroundColor: '#DCF8C6' }}>
       <Box display="flex" alignItems="center">
@@ -130,11 +156,10 @@ const MessageForm = ({ token }) => {
           <WhatsAppIcon />
         </Avatar>
         <Box>
-          {/* Memoized Media Preview */}
           <MediaPreview />
-          
-          {/* Text Preview */}
-          <TextPreview />
+          <Typography variant="body1" style={{ whiteSpace: 'pre-wrap' }}>
+            {message}
+          </Typography>
         </Box>
       </Box>
     </Paper>
@@ -143,14 +168,18 @@ const MessageForm = ({ token }) => {
   return (
     <CacheProvider value={cacheRtl}>
       <ThemeProvider theme={theme}>
-        <Box dir="rtl" style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <Box dir="rtl" style={{ maxWidth: '700px', margin: '0 auto' }}>
           <form onSubmit={handleSendMessage} style={{ padding: '20px' }}>
             <h3>שלח הודעה או מדיה</h3>
 
             {/* WhatsApp Number Selection */}
             <FormControl fullWidth style={{ marginBottom: '20px' }}>
               <InputLabel>בחירת מספר WhatsApp</InputLabel>
-              <Select label="בחירת מספר WhatsApp" onChange={(e) => setWhatsappNumber(e.target.value)} required>
+              <Select
+                label="בחירת מספר WhatsApp"
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                required
+              >
                 {Array.from({ length: 10 }, (_, i) => (
                   <MenuItem key={i + 1} value={(i + 1).toString()}>
                     {`WhatsApp מספר ${i + 1}`}
@@ -162,26 +191,34 @@ const MessageForm = ({ token }) => {
             {/* Group Selection */}
             <FormControl fullWidth style={{ marginBottom: '20px' }}>
               <InputLabel>בחירת קבוצה</InputLabel>
-              <Select label="בחירת קבוצה" onChange={(e) => setGroup(e.target.value)} required>
-                {[
-              { value: '0', label: 'כל הקבוצות' },
-              { value: '1', label: 'שלושים רבני עיר מן הערים הגדולות' },
-              { value: '2', label: 'ארבעה עשר רבני עיר מן המועצות המקומיות הגדולות' },
-              { value: '3', label: 'שני רבנים אזוריים מהמועצות האזוריות הגדולות' },
-              { value: '4', label: 'שמונה רבנים מן היישובים הגדולים' },
-              { value: '5', label: 'ארבעה רבני שכונות' },
-              { value: '6', label: 'עשרה דיינים, הוותיקים ביותר' },
-              { value: '7', label: 'הרב הצבאי הראשי והרב הצבאי' },
-              { value: '8', label: 'עשרים וחמישה ראשי הערים הגדולות' },
-              { value: '9', label: 'שישה ראשי המועצות המקומיות הגדולות' },
-              { value: '10', label: 'ארבעה ראשי המועצות האזוריות הגדולות' },
-              { value: '11', label: 'ארבעה עשר ראשי מועצות דתיות של הערים הגדולות' },
-              { value: '12', label: 'ארבעה ראשי מועצות דתיות של המועצות המקומיות הגדולות' },
-              { value: '13', label: 'שני שרים שבחרה הממשלה' },
-              { value: '14', label: 'חמישה חברי הכנסת שבחרה ועדת הכנסת' },
-              { value: '15', label: 'עשר נשות ציבור שמינה השר לשירותי הדת' },
-              { value: '16', label: 'בדיקה' },
-            ].map((option) => (
+              <Select
+                multiple
+                value={selectedGroups}
+                onChange={handleGroupChange}
+                input={<OutlinedInput label="בחירת קבוצה" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip
+                        key={value}
+                        label={
+                          groupOptions.find((option) => option.value === value)
+                            ?.label
+                        }
+                      />
+                    ))}
+                  </Box>
+                )}
+                MenuProps={{
+                  PaperProps: {
+                    style: {
+                      maxHeight: 48 * 4.5 + 8,
+                      width: 250,
+                    },
+                  },
+                }}
+              >
+                {groupOptions.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
@@ -214,7 +251,6 @@ const MessageForm = ({ token }) => {
               <input type="file" hidden onChange={handleFileChange} />
             </Button>
 
-            {/* Display uploaded file name */}
             {file && (
               <Typography variant="body2" color="textSecondary">
                 {file.name}
@@ -233,11 +269,15 @@ const MessageForm = ({ token }) => {
               הצג תצוגה מקדימה
             </Button>
 
-            {/* WhatsApp-style Message Preview */}
             {showPreview && <MessagePreview />}
 
             {/* Send Button with Progress Indicator */}
-            <Box position="relative" display="inline-flex" fullWidth style={{ width: '100%' }}>
+            <Box
+              position="relative"
+              display="inline-flex"
+              fullWidth
+              style={{ width: '100%' }}
+            >
               <Button
                 type="submit"
                 variant="contained"
@@ -251,7 +291,13 @@ const MessageForm = ({ token }) => {
               {sending && (
                 <CircularProgress
                   size={24}
-                  style={{ position: 'absolute', top: '50%', left: '50%', marginTop: '-12px', marginLeft: '-12px' }}
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    marginTop: '-12px',
+                    marginLeft: '-12px',
+                  }}
                 />
               )}
             </Box>
