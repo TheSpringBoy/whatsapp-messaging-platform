@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const authRoutes = require('./routes/authRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const oauthRoutes = require('./routes/oauthRoutes');
 
 // Enable CORS for all routes
 app.use(cors());
@@ -14,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
-
+app.use('/oauth2callback', oauthRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3000;
