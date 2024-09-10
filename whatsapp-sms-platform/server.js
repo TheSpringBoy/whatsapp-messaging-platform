@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
-app.use('/oauth2callback', oauthRoutes);
+app.use('/api/oauth2callback', oauthRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3000;
