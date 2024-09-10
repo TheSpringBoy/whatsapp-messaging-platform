@@ -1,9 +1,9 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
+const db = require('../db.js');
 
 // Array to store multiple WhatsApp clients (for 10 different numbers)
 const clients = [];
-
 for (let i = 1; i <= process.env.SESSIONS_NUM; i++) {
     const client = new Client({
         puppeteer: {
@@ -26,11 +26,36 @@ for (let i = 1; i <= process.env.SESSIONS_NUM; i++) {
         console.log(`WhatsApp client ${i} is ready!`);
     });
 
+    client.on('message_ack', async (msg, ack) => {
+        if (ack === 3) {  // 3 means the message was read
+            console.log(`Message read by ${msg.to}`);
+    
+            // Save the read receipt to the database
+            try {
+                await db.query('UPDATE messages SET read_count = read_count + 1 WHERE id = $1', [msg.id._serialized]);
+                console.log(`Read count updated for message ID: ${msg.id._serialized}`);
+            } catch (error) {
+                console.error('Failed to update read receipt in the database:', error);
+            }
+        }
+    });
+
+    client.on('message', async (msg) => {    
+        console.log(`Reply received from ${msg.from}`);
+    
+        try {
+            await db.query('UPDATE messages SET reply_count = reply_count + 1 WHERE whatsapp_message_id = $1', [msg.id._serialized]);
+            console.log(`Reply count updated for message ID: ${msg.id._serialized}`);
+        } catch (error) {
+            console.error('Failed to update reply count in the database:', error);
+        }
+    });
+    
     // Error handling to prevent server from crashing
     client.on('error', (err) => {
         console.error(`Error on client ${i}: ${err.message}`);
     });
-
+    
     client.initialize();
     clients.push(client);
 }
@@ -42,13 +67,20 @@ function formatPhoneNumberToChatId(phoneNumber, countryCode = '972') {
     return formattedNumber;
 }
 
-// Function to send a text message
+// Function to send a text message and log to DB
 const sendMessage = async (index, number, message) => {
     try {
-        const chatId = formatPhoneNumberToChatId(number);  // Convert phone number to WhatsApp chat ID
-        const client = clients[index - 1];  // Get the correct client based on index
+        const chatId = formatPhoneNumberToChatId(number);
+        const client = clients[index - 1];
         const response = await client.sendMessage(chatId, message);
-        console.log(`Message sent to ${chatId}: ${message}`);
+
+        // Save message to the database
+        await db.query(
+            'INSERT INTO messages (group_id, message_text, sent_at, read_count, reply_count, whatsapp_message_id) VALUES ($1, $2, NOW(), 0, 0, $3) RETURNING id',
+            [index, message, response.id._serialized]  // Store WhatsApp message ID
+        );        
+
+        console.log(`Message sent to ${chatId}`);
         return response;
     } catch (error) {
         console.error('Failed to send message:', error);
@@ -60,9 +92,16 @@ const sendMessage = async (index, number, message) => {
 const sendMedia = async (index, number, mediaPath, caption) => {
     try {
         const chatId = formatPhoneNumberToChatId(number);
-        const client = clients[index - 1];  // Get the correct client based on index
+        const client = clients[index - 1];
         const media = MessageMedia.fromFilePath(mediaPath);
         const response = await client.sendMessage(chatId, media, { caption: caption });
+
+        // Save media message to the database
+        await db.query(
+            'INSERT INTO messages (group_id, message_text, sent_at, read_count, reply_count, whatsapp_message_id) VALUES ($1, $2, NOW(), 0, 0, $3) RETURNING id',
+            [index, caption || 'Media message', response.id._serialized]  // Store WhatsApp message ID
+        );
+        
         console.log(`Media sent to ${chatId}`);
         return response;
     } catch (error) {
