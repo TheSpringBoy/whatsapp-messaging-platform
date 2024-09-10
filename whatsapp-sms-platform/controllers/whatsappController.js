@@ -30,15 +30,20 @@ for (let i = 1; i <= process.env.SESSIONS_NUM; i++) {
         if (ack === 3) {  // 3 means the message was read
             console.log(`Message read by ${msg.to}`);
     
-            // Save the read receipt to the database
-            try {
-                await db.query('UPDATE messages SET read_count = read_count + 1 WHERE id = $1', [msg.id._serialized]);
-                console.log(`Read count updated for message ID: ${msg.id._serialized}`);
-            } catch (error) {
-                console.error('Failed to update read receipt in the database:', error);
+            // Find the database id using the WhatsApp message ID
+            const result = await db.query('SELECT id FROM messages WHERE whatsapp_message_id = $1', [msg.id._serialized]);
+            const dbMessageId = result.rows[0]?.id;
+    
+            if (dbMessageId) {
+                try {
+                    await db.query('UPDATE messages SET read_count = read_count + 1 WHERE id = $1', [dbMessageId]);
+                    console.log(`Read count updated for message ID: ${dbMessageId}`);
+                } catch (error) {
+                    console.error('Failed to update read receipt in the database:', error);
+                }
             }
         }
-    });
+    });    
 
     client.on('message', async (msg) => {    
         console.log(`Reply received from ${msg.from}`);

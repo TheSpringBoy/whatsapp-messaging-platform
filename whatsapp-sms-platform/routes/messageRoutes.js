@@ -60,7 +60,6 @@ const upload = multer({ storage: storage });
 const SPREADSHEET_ID = '1MTVc3UpEpMlOPof8EigQUNv3WRKBba9KanHuhUfjyC8';
 const RANGE = 'גיליון1!A2:E';  // Adjust according to your sheet structure
 
-// Function to introduce a delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 router.post('/send-to-group', authController.verifyToken, upload.single('media'), async (req, res) => {
@@ -75,28 +74,24 @@ router.post('/send-to-group', authController.verifyToken, upload.single('media')
             ? sheetData  // Send to all rows
             : sheetData.filter(row => row[0] === group);  // Otherwise filter by specific group
 
-        const promises = recipients.map(async (recipient) => {
+        // Use for...of loop for sequential message sending with delay
+        for (const recipient of recipients) {
             let number = recipient[4];  // Assuming phone number is in column 5 (index 4)
             if (number) {
                 number = convertPhoneNumber(number);
                 if (mediaFile) {
                     const mediaPath = mediaFile.path;  // Use the uploaded file's path
                     // Send media with the message as caption
-                    const response = await whatsappController.sendMedia(index, number, mediaPath, message);
+                    await whatsappController.sendMedia(index, number, mediaPath, message);
                 } else {
                     // Otherwise, send a text message
-                    const response = await whatsappController.sendMessage(index, number, message);
+                    await whatsappController.sendMessage(index, number, message);
                 }
-                
-                await delay(2000);
-                return response;
-            } else {
-                // Skip if number is undefined
-                return;
+                // Add a delay between each message
+                await delay(500);  // Delay for 0.5 seconds
             }
-        });
+        }
 
-        await Promise.all(promises);
         // After all messages are sent, delete the media file
         if (mediaFile) {
             fs.unlink(mediaFile.path, (err) => {
@@ -107,11 +102,13 @@ router.post('/send-to-group', authController.verifyToken, upload.single('media')
                 }
             });
         }
+
         res.status(200).json({ success: true, message: 'Messages sent successfully!' });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to send messages', details: error.message });
     }
 });
+
 
 function convertPhoneNumber(phoneNumber) {
     // Remove the hyphen and leading zero
