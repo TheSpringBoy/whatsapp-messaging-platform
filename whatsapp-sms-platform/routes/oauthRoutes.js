@@ -14,7 +14,7 @@ const oAuth2Client = new google.auth.OAuth2(
 );
 
 // OAuth2 callback route
-router.get('/oauth2callback', async (req, res) => {
+router.get('', async (req, res) => {
     const code = req.query.code;
 
     try {
