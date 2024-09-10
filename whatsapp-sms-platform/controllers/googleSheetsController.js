@@ -1,28 +1,33 @@
 const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
 // Path to the credentials file
 const CREDENTIALS_PATH = path.join(__dirname, 'credentials.json');
-const TOKEN_PATH = path.join(__dirname, 'token.json');
+const TOKEN_PATH = 'token.json';
 
 // Scopes required to read Google Sheets
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 
-// Load client secrets
-const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
-
-// Authorize the client
+// Authorize the client using environment variables
 async function authorize() {
-    const { client_secret, client_id, redirect_uris } = credentials.web;  // Change from 'installed' to 'web'
-    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+    const { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REDIRECT_URI } = process.env;
+    
+    const oAuth2Client = new google.auth.OAuth2(
+        GOOGLE_OAUTH_CLIENT_ID,
+        GOOGLE_OAUTH_CLIENT_SECRET,
+        GOOGLE_OAUTH_REDIRECT_URI
+    );
 
-    // Check if we have previously stored a token
-    if (fs.existsSync(TOKEN_PATH)) {
+    // Check if a token is already available (either from env or file)
+    if (process.env.GOOGLE_OAUTH_TOKEN) {
+        oAuth2Client.setCredentials(JSON.parse(process.env.GOOGLE_OAUTH_TOKEN));
+    } else if (fs.existsSync(TOKEN_PATH)) {
         const token = fs.readFileSync(TOKEN_PATH);
         oAuth2Client.setCredentials(JSON.parse(token));
     } else {
-        // If no token, generate a new one
+        // No token available; generate a new one (for first-time setup)
         const authUrl = oAuth2Client.generateAuthUrl({
             access_type: 'offline',
             scope: SCOPES,
@@ -37,7 +42,7 @@ async function authorize() {
             oAuth2Client.getToken(code, (err, token) => {
                 if (err) return console.error('Error retrieving access token', err);
                 oAuth2Client.setCredentials(token);
-                // Store the token for future use
+                // Optionally store the token for future use in file or environment variable
                 fs.writeFileSync(TOKEN_PATH, JSON.stringify(token));
             });
         });
@@ -49,7 +54,7 @@ async function authorize() {
 async function fetchDataFromSheet(spreadsheetId, range) {
     const auth = await authorize();
     const sheets = google.sheets({ version: 'v4', auth });
-    
+
     const response = await sheets.spreadsheets.values.get({
         spreadsheetId,
         range,
