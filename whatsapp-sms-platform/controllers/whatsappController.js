@@ -4,7 +4,7 @@ const qrcode = require('qrcode-terminal');
 // Array to store multiple WhatsApp clients (for 10 different numbers)
 const clients = [];
 
-for (let i = 1; i <= 10; i++) {
+for (let i = 1; i <= process.env.SESSIONS_NUM; i++) {
     const client = new Client({
         puppeteer: {
             executablePath: process.env.CHROME_PATH,
