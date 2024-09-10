@@ -180,6 +180,7 @@ const MessageForm = ({ token }) => {
               { value: '13', label: 'שני שרים שבחרה הממשלה' },
               { value: '14', label: 'חמישה חברי הכנסת שבחרה ועדת הכנסת' },
               { value: '15', label: 'עשר נשות ציבור שמינה השר לשירותי הדת' },
+              { value: '16', label: 'בדיקה' },
             ].map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
