@@ -6,6 +6,7 @@ const authController = require('../controllers/authController');
 const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 // Route to send a WhatsApp message
 router.post('/send-message', authController.verifyToken, async (req, res) => {
@@ -74,6 +75,8 @@ router.post('/send-to-group', authController.verifyToken, upload.single('media')
             ? sheetData  // Send to all rows
             : sheetData.filter(row => row[0] === group);  // Otherwise filter by specific group
 
+        const messageGroupId = uuidv4();
+
         // Use for...of loop for sequential message sending with delay
         for (const recipient of recipients) {
             let number = recipient[4];  // Assuming phone number is in column 5 (index 4)
@@ -83,10 +86,10 @@ router.post('/send-to-group', authController.verifyToken, upload.single('media')
                 if (mediaFile) {
                     const mediaPath = mediaFile.path;  // Use the uploaded file's path
                     // Send media with the message as caption
-                    await whatsappController.sendMedia(index, number, mediaPath, message, group_n);
+                    await whatsappController.sendMedia(index, number, mediaPath, message, group_n, messageGroupId);
                 } else {
                     // Otherwise, send a text message
-                    await whatsappController.sendMessage(index, number, message, group_n);
+                    await whatsappController.sendMessage(index, number, message, group_n, messageGroupId);
                 }
                 // Add a delay between each message
                 await delay(500);  // Delay for 0.5 seconds

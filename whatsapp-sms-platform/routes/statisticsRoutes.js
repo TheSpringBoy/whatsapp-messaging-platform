@@ -7,13 +7,12 @@ router.get('/groups', async (req, res) => {
     try {
         const result = await db.query(`
             SELECT g.group_name, 
-                   COUNT(m.id) as messages_sent,
+                   COUNT(DISTINCT m.message_group_id) AS messages_sent,
                    SUM(m.read_count) as total_reads, 
                    SUM(m.reply_count) as total_replies
             FROM groups g
             LEFT JOIN messages m ON g.id = m.group_id
-            GROUP BY g.id
-            ORDER BY g.id
+            GROUP BY g.group_name
         `);
         res.status(200).json(result.rows);
     } catch (error) {
