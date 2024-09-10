@@ -8,6 +8,7 @@ for (let i = 1; i <= 10; i++) {
     const client = new Client({
         puppeteer: {
             executablePath: process.env.CHROME_PATH,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
         },
         authStrategy: new LocalAuth({
             clientId: `whatsappClient${i}`,  // Unique ID for each number
