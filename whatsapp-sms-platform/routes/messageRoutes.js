@@ -60,6 +60,9 @@ const upload = multer({ storage: storage });
 const SPREADSHEET_ID = '1MTVc3UpEpMlOPof8EigQUNv3WRKBba9KanHuhUfjyC8';
 const RANGE = 'גיליון1!A2:E';  // Adjust according to your sheet structure
 
+// Function to introduce a delay
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 router.post('/send-to-group', authController.verifyToken, upload.single('media'), async (req, res) => {
     const { index, group, message } = req.body;
     const mediaFile = req.file;
@@ -79,11 +82,14 @@ router.post('/send-to-group', authController.verifyToken, upload.single('media')
                 if (mediaFile) {
                     const mediaPath = mediaFile.path;  // Use the uploaded file's path
                     // Send media with the message as caption
-                    return whatsappController.sendMedia(index, number, mediaPath, message);
+                    const response = await whatsappController.sendMedia(index, number, mediaPath, message);
                 } else {
                     // Otherwise, send a text message
-                    return whatsappController.sendMessage(index, number, message);
+                    const response = await whatsappController.sendMessage(index, number, message);
                 }
+                
+                await delay(2000);
+                return response;
             } else {
                 // Skip if number is undefined
                 return;
