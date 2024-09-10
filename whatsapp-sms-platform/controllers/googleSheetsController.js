@@ -44,6 +44,7 @@ function startOAuthFlow(oAuth2Client) {
     const authUrl = oAuth2Client.generateAuthUrl({
         access_type: 'offline',  // Important to get a refresh token
         scope: SCOPES,
+        prompt: 'consent' // Ensures user is prompted and a new refresh token is generated
     });
     console.log('Please visit this URL to authorize the app:', authUrl);
     return authUrl;  // Return this URL in case you want to show it in the UI
