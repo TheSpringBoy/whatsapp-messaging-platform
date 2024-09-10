@@ -16,21 +16,26 @@ const oAuth2Client = new google.auth.OAuth2(
 // OAuth2 callback route
 router.get('', async (req, res) => {
     const code = req.query.code;
+    
+    if (!code) {
+        return res.status(400).send('No authorization code provided');
+    }
 
     try {
+        console.log('Received authorization code:', code);
         const { tokens } = await oAuth2Client.getToken(code);  // Get tokens
         oAuth2Client.setCredentials(tokens);
 
         // Optionally save the token for future use
         fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens));
-
-        // Store the token in the environment or as needed
         console.log('Token stored successfully:', tokens);
+
         res.send('Authentication successful! You can close this window.');
     } catch (err) {
         console.error('Error retrieving access token:', err);
         res.status(500).send('Authentication failed.');
     }
 });
+
 
 module.exports = router;
