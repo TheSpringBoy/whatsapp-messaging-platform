@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
-import MessageForm from './MessageForm';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import MainApp from './MainApp';
+import {
+  Button,
+  TextField,
+  IconButton,
+  InputAdornment,
+  OutlinedInput,
+  InputLabel,
+  FormControl,
+  Container,
+  Box
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 // Helper function to decode JWT token
 const decodeToken = (token) => {
@@ -20,7 +31,9 @@ const App = () => {
   const [password, setPassword] = useState('');
   const [token, setToken] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);  // Toggle password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Server URL from environment variables
   const serverUrl = process.env.REACT_APP_SERVER_URL;
@@ -42,6 +55,7 @@ const App = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoginError(false); // Reset error state before login attempt
     try {
       const response = await axios.post(`${serverUrl}/api/auth/login`, {
         username,
@@ -51,50 +65,77 @@ const App = () => {
       setIsLoggedIn(true);
       localStorage.setItem('token', response.data.token);
     } catch (error) {
-      //alert(error);
-      alert('Login failed! Please check your credentials.');
+      setLoginError(true); // Set error state to true when login fails
+      setErrorMessage('Login failed! Please check your credentials.');
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
   };
-
+  
   return (
     <div className="App">
       {!isLoggedIn ? (
-        <form onSubmit={handleLogin} className="login-form">
-          <h2>התחברות</h2>
-          <div className="input-container">
-            <input
-              type="text"
-              placeholder="שם משתמש"
+        <Container maxWidth="sm">
+          <Box
+            component="form"
+            onSubmit={handleLogin}
+            className="login-form"
+          >
+            <h2>התחברות</h2>
+
+            {/* Username Field */}
+            <TextField
+              label="שם משתמש"
+              variant="outlined"
+              fullWidth
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              error={loginError} // Shows error styling when login fails
+              helperText={loginError ? errorMessage : ''}
+              style={{ marginBottom: '20px' }}
             />
-          </div>
-          <div className="input-container password-container">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="סיסמא"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <span className="password-toggle" onClick={togglePasswordVisibility}>
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
-          </div>
-          <button type="submit" className="login-button">התחבר/י</button>
-        </form>
+
+            {/* Password Field */}
+            <FormControl fullWidth variant="outlined" style={{ marginBottom: '20px' }}>
+              <InputLabel htmlFor="outlined-adornment-password">סיסמא</InputLabel>
+              <OutlinedInput
+                id="outlined-adornment-password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+                label="Password"
+                error={loginError} // Shows error styling when login fails
+              />
+            </FormControl>
+
+            {/* Submit Button */}
+            <Button variant="contained" color="primary" type="submit" fullWidth>
+              התחבר/י
+            </Button>
+          </Box>
+        </Container>
       ) : (
-        <div>
-          <MessageForm token={token} />
-        </div>
+        <MainApp token={token} />
       )}
     </div>
   );
+  
 };
 
 export default App;

@@ -33,7 +33,6 @@ input {
   border-radius: 5px;
   font-size: 16px;
   box-sizing:border-box;
-  direction: ltr;
 }
 
 input:focus {

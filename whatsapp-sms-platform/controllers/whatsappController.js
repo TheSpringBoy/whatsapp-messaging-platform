@@ -73,7 +73,7 @@ function formatPhoneNumberToChatId(phoneNumber, countryCode = '972') {
 }
 
 // Function to send a text message and log to DB
-const sendMessage = async (index, number, message) => {
+const sendMessage = async (index, number, message, group) => {
     try {
         const chatId = formatPhoneNumberToChatId(number);
         const client = clients[index - 1];
@@ -81,8 +81,8 @@ const sendMessage = async (index, number, message) => {
 
         // Save message to the database
         await db.query(
-            'INSERT INTO messages (group_id, message_text, sent_at, read_count, reply_count, whatsapp_message_id) VALUES ($1, $2, NOW(), 0, 0, $3) RETURNING id',
-            [index, message, response.id._serialized]  // Store WhatsApp message ID
+            'INSERT INTO messages (group_id, message_text, sent_at, read_count, reply_count, whatsapp_message_id) VALUES ($1, $2, NOW(), 0, 0, $3)',
+            [group, message, response.id._serialized]  // Store WhatsApp message ID
         );        
 
         console.log(`Message sent to ${chatId}`);
@@ -94,7 +94,7 @@ const sendMessage = async (index, number, message) => {
 };
 
 // Function to send a media
-const sendMedia = async (index, number, mediaPath, caption) => {
+const sendMedia = async (index, number, mediaPath, caption, group) => {
     try {
         const chatId = formatPhoneNumberToChatId(number);
         const client = clients[index - 1];
@@ -103,8 +103,8 @@ const sendMedia = async (index, number, mediaPath, caption) => {
 
         // Save media message to the database
         await db.query(
-            'INSERT INTO messages (group_id, message_text, sent_at, read_count, reply_count, whatsapp_message_id) VALUES ($1, $2, NOW(), 0, 0, $3) RETURNING id',
-            [index, caption || 'Media message', response.id._serialized]  // Store WhatsApp message ID
+            'INSERT INTO messages (group_id, message_text, sent_at, read_count, reply_count, whatsapp_message_id) VALUES ($1, $2, NOW(), 0, 0, $3)',
+            [group, caption || 'Media message', response.id._serialized]  // Store WhatsApp message ID
         );
         
         console.log(`Media sent to ${chatId}`);

@@ -77,15 +77,16 @@ router.post('/send-to-group', authController.verifyToken, upload.single('media')
         // Use for...of loop for sequential message sending with delay
         for (const recipient of recipients) {
             let number = recipient[4];  // Assuming phone number is in column 5 (index 4)
+            let group_n = recipient[0];
             if (number) {
                 number = convertPhoneNumber(number);
                 if (mediaFile) {
                     const mediaPath = mediaFile.path;  // Use the uploaded file's path
                     // Send media with the message as caption
-                    await whatsappController.sendMedia(index, number, mediaPath, message);
+                    await whatsappController.sendMedia(index, number, mediaPath, message, group_n);
                 } else {
                     // Otherwise, send a text message
-                    await whatsappController.sendMessage(index, number, message);
+                    await whatsappController.sendMessage(index, number, message, group_n);
                 }
                 // Add a delay between each message
                 await delay(500);  // Delay for 0.5 seconds
