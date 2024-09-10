@@ -14,7 +14,7 @@ for (let i = 1; i <= process.env.SESSIONS_NUM; i++) {
             clientId: `whatsappClient${i}`,  // Unique ID for each number
             dataPath: `./sessions/whatsapp_sessions_${i}`  // Custom session storage path
         }),
-        qrMaxRetries: 1  // Maximum number of retries to generate the QR code
+        qrMaxRetries: 10  // Maximum number of retries to generate the QR code
     });
 
     client.on('qr', (qr) => {
