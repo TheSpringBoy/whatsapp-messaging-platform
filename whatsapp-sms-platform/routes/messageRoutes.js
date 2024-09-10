@@ -57,7 +57,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Google Sheets ID and range
-const SPREADSHEET_ID = '1Ve3DvIoe-buLMWezwZtFaOp7BVQFZLCMFaMkhkwCreI';
+const SPREADSHEET_ID = '1MTVc3UpEpMlOPof8EigQUNv3WRKBba9KanHuhUfjyC8';
 const RANGE = 'גיליון1!A2:E';  // Adjust according to your sheet structure
 
 router.post('/send-to-group', authController.verifyToken, upload.single('media'), async (req, res) => {
