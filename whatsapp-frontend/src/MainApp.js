@@ -16,7 +16,7 @@ const MainApp = ({ token }) => {
   };
 
   return (
-    <Box sx={{ width: '40%' }}>
+    <Box sx={{ maxWidth: '1000px' }}>
       <AppBar position="static" color="default">
         <Tabs
           value={selectedTab}
