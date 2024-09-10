@@ -49,8 +49,14 @@ for (let i = 1; i <= process.env.SESSIONS_NUM; i++) {
         console.log(`Reply received from ${msg.from}`);
     
         try {
-            await db.query('UPDATE messages SET reply_count = reply_count + 1 WHERE whatsapp_message_id = $1', [msg.id._serialized]);
-            console.log(`Reply count updated for message ID: ${msg.id._serialized}`);
+            await db.query(
+                `UPDATE messages 
+                 SET reply_count = reply_count + 1 
+                 WHERE whatsapp_message_id LIKE $1 
+                 AND sent_at = (SELECT MAX(sent_at) FROM messages WHERE whatsapp_message_id LIKE $1)`,
+                [`%${msg.from}%`]
+            );
+            console.log(`Reply count updated forhe last message to sender: ${msg.from}`);
         } catch (error) {
             console.error('Failed to update reply count in the database:', error);
         }
