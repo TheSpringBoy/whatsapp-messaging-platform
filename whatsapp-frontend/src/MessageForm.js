@@ -165,6 +165,14 @@ const MessageForm = ({ token }) => {
     </Paper>
   );
 
+  // Reset form after submittion
+  const resetForm = () => {
+    setMessage('');
+    setSelectedGroups([]);
+    setFile(null);
+    setShowPreview(false);
+  };
+
   return (
     <CacheProvider value={cacheRtl}>
       <ThemeProvider theme={theme}>
@@ -317,8 +325,11 @@ const MessageForm = ({ token }) => {
             <Snackbar
               open={sendStatus === 'success'}
               message="ההודעה נשלחה בהצלחה!"
-              autoHideDuration={3000}
-              onClose={() => setSendStatus(null)}
+              autoHideDuration={5000}
+              onClose={() => {
+                setSendStatus(null);
+                resetForm();  // Clear form fields after message is sent
+              }}
             />
           </form>
         </Box>
