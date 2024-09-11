@@ -105,7 +105,7 @@ const MessageForm = ({ token }) => {
 
     const formData = new FormData();
     formData.append('index', whatsappNumber);
-    formData.append('groups', selectedGroups);
+    formData.append('groups', JSON.stringify(selectedGroups));
     formData.append('message', message);
 
     if (file) {

@@ -64,7 +64,8 @@ const RANGE = 'גיליון1!A2:E';  // Adjust according to your sheet structure
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 router.post('/send-to-group', authController.verifyToken, upload.single('media'), async (req, res) => {
-    const { index, groups, message } = req.body;
+    const { index, message } = req.body;
+    const groups = JSON.parse(req.body.groups);
     const mediaFile = req.file;
 
     try {

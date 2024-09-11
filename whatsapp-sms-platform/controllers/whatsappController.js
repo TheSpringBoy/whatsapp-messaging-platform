@@ -16,7 +16,7 @@ for (let i = 1; i <= process.env.SESSIONS_NUM; i++) {
         }),
         qrMaxRetries: 10  // Maximum number of retries to generate the QR code
     });
-
+    
     client.on('qr', (qr) => {
         console.log(`QR Code received for client ${i}, scan it with your phone!`);
         qrcode.generate(qr, { small: true });
@@ -62,9 +62,8 @@ for (let i = 1; i <= process.env.SESSIONS_NUM; i++) {
         }
     });
     
-    // Error handling to prevent server from crashing
-    client.on('error', (err) => {
-        console.error(`Error on client ${i}: ${err.message}`);
+    client.on('disconnected', (reason) => {
+        console.log(`Client ${i} was logged out:`, reason);
     });
     
     client.initialize();
@@ -83,6 +82,7 @@ const sendMessage = async (index, number, message, group, messageGroupId) => {
     try {
         const chatId = formatPhoneNumberToChatId(number);
         const client = clients[index - 1];
+        console.log('Attempting to send message to ', chatId);
         const response = await client.sendMessage(chatId, message);
 
         // Save message to the database
