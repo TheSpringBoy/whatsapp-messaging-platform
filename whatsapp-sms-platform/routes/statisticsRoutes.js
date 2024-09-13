@@ -48,6 +48,7 @@ router.get('/per-message', authController.verifyToken, async (req, res) => {
             SELECT 
                 m.message_group_id,
                 m.message_text,
+                MAX(m.media_name) AS media_name,
                 g.group_name,
                 COUNT(m.id) AS total_sent,
                 SUM(CASE WHEN m.read_count > 0 THEN 1 ELSE 0 END) AS total_reads,

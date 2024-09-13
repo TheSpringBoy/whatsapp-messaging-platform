@@ -108,15 +108,14 @@ const sendMedia = async (index, number, mediaPath, caption, group, messageGroupI
 
         // Extract the media file name
         const fileName = mediaPath.split('/').pop();  // Adjust for your file system
-        const messageText = `הקובץ '${fileName}' נשלח עם ההודעה.${caption ? `\n${caption}` : ''}`;
 
         // Send media with caption
         const response = await client.sendMessage(chatId, media, { caption });
 
-        // Save media message to the database with custom message_text
+        // Save media message to the database with the media_name
         await db.query(
-            'INSERT INTO messages (group_id, message_text, sent_at, read_count, reply_count, whatsapp_message_id, message_group_id) VALUES ($1, $2, NOW(), 0, 0, $3, $4)',
-            [group, messageText, response.id._serialized, messageGroupId]
+            'INSERT INTO messages (group_id, message_text, media_name, sent_at, read_count, reply_count, whatsapp_message_id, message_group_id) VALUES ($1, $2, $3, NOW(), 0, 0, $4, $5)',
+            [group, caption, fileName, response.id._serialized, messageGroupId]  // Storing media file name
         );
 
         console.log(`Media sent to ${chatId}`);
@@ -126,6 +125,7 @@ const sendMedia = async (index, number, mediaPath, caption, group, messageGroupI
         throw error;
     }
 };
+
 
 
 // Export the functions and clients array
