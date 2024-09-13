@@ -87,7 +87,7 @@ const sendMessage = async (index, number, message, group, messageGroupId) => {
 
         // Save message to the database
         await db.query(
-            "INSERT INTO messages (group_id, message_text, sent_at, read_count, reply_count, whatsapp_message_id, message_group_id) VALUES ($1, $2, NOW() AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jerusalem', 0, 0, $3, $4)",
+            "INSERT INTO messages (group_id, message_text, sent_at, read_count, reply_count, whatsapp_message_id, message_group_id) VALUES ($1, $2, NOW() AT TIME ZONE 'Asia/Jerusalem', 0, 0, $3, $4)",
             [group, message, response.id._serialized, messageGroupId]  // Store WhatsApp message ID
         );        
 
