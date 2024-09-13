@@ -8,13 +8,16 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 // WhatsApp-style message preview
-const MessagePreview = ({ name, message }) => (
+const MessagePreview = ({ name, message, time }) => (
   <Paper elevation={3} style={{ padding: '10px', margin: '20px 0', backgroundColor: '#DCF8C6' }}>
     <Box display="flex" alignItems="center">
       <Avatar style={{ marginLeft: '10px', backgroundColor: '#25D366' }}>
         <WhatsAppIcon />
       </Avatar>
       <Box>
+      <Typography variant="body2" color="textSecondary">
+            {time}
+        </Typography>
         { name && <Typography variant="body2" color="textSecondary">
             {`הקובץ "${name}" נשלח עם ההודעה.`}
         </Typography>}
@@ -44,6 +47,7 @@ const MessageStatistics = ({ token }) => {
             acc[messageGroupId] = {
               message_text: current.message_text,
               media_name: current.media_name,
+              sent_at: current.sent_at,
               groups: [],
             };
           }
@@ -149,7 +153,7 @@ const MessageStatistics = ({ token }) => {
 
           return (
             <div key={index} style={{ margin: '40px 0', minWidth: '600px' }}>
-              <MessagePreview name={messageStat.media_name} message={messageStat.message_text} />
+              <MessagePreview name={messageStat.media_name} message={messageStat.message_text} time={messageStat.sent_at}/>
               <Bar data={data} options={options} style={{maxHeight: '250px'}}/>
             </div>
           );

@@ -49,6 +49,7 @@ router.get('/per-message', authController.verifyToken, async (req, res) => {
                 m.message_group_id,
                 m.message_text,
                 MAX(m.media_name) AS media_name,
+                TO_CHAR(MAX(m.sent_at), 'DD/MM/YYYY HH24:MI') AS sent_at,
                 g.group_name,
                 COUNT(m.id) AS total_sent,
                 SUM(CASE WHEN m.read_count > 0 THEN 1 ELSE 0 END) AS total_reads,
@@ -58,7 +59,7 @@ router.get('/per-message', authController.verifyToken, async (req, res) => {
             FROM messages m
             JOIN groups g ON m.group_id = g.id
             GROUP BY m.message_group_id, m.group_id, g.group_name, m.message_text
-            ORDER BY m.id;
+            ORDER BY MAX(m.sent_at) DESC;
         `);
         res.json(result.rows);
     } catch (error) {
