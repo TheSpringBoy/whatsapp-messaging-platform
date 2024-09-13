@@ -105,14 +105,20 @@ const sendMedia = async (index, number, mediaPath, caption, group, messageGroupI
         const chatId = formatPhoneNumberToChatId(number);
         const client = clients[index - 1];
         const media = MessageMedia.fromFilePath(mediaPath);
-        const response = await client.sendMessage(chatId, media, { caption: caption });
 
-        // Save media message to the database
+        // Extract the media file name
+        const fileName = mediaPath.split('/').pop();  // Adjust for your file system
+        const messageText = `הקובץ '${fileName}' נשלח עם ההודעה.${caption ? `\n${caption}` : ''}`;
+
+        // Send media with caption
+        const response = await client.sendMessage(chatId, media, { caption });
+
+        // Save media message to the database with custom message_text
         await db.query(
             'INSERT INTO messages (group_id, message_text, sent_at, read_count, reply_count, whatsapp_message_id, message_group_id) VALUES ($1, $2, NOW(), 0, 0, $3, $4)',
-            [group, caption || 'Media message', response.id._serialized, messageGroupId]  // Store WhatsApp message ID
+            [group, messageText, response.id._serialized, messageGroupId]
         );
-        
+
         console.log(`Media sent to ${chatId}`);
         return response;
     } catch (error) {
@@ -120,6 +126,7 @@ const sendMedia = async (index, number, mediaPath, caption, group, messageGroupI
         throw error;
     }
 };
+
 
 // Export the functions and clients array
 module.exports = { 
