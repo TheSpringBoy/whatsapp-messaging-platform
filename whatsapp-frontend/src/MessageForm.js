@@ -204,6 +204,7 @@ const MessageForm = ({ token }) => {
                 value={selectedGroups}
                 onChange={handleGroupChange}
                 input={<OutlinedInput label="בחירת קבוצה" />}
+                required
                 renderValue={(selected) => (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {selected.map((value) => (
