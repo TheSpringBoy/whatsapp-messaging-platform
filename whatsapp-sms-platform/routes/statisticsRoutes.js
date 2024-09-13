@@ -57,7 +57,7 @@ router.get('/per-message', authController.verifyToken, async (req, res) => {
             FROM messages m
             JOIN groups g ON m.group_id = g.id
             GROUP BY m.message_group_id, m.group_id, g.group_name, m.message_text
-            ORDER BY m.message_group_id, m.group_id;
+            ORDER BY m.group_id;
         `);
         res.json(result.rows);
     } catch (error) {
