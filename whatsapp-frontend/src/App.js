@@ -78,7 +78,7 @@ const App = () => {
   return (
     <div className="App">
       {!isLoggedIn ? (
-        <Container maxWidth="sm">
+        <Container dir="ltr" maxWidth="sm">
           <Box
             component="form"
             onSubmit={handleLogin}
