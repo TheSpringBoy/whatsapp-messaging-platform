@@ -99,7 +99,7 @@ router.post('/send-to-group', authController.verifyToken, upload.single('media')
                         await whatsappController.sendMessage(index, number, message, group_n, messageGroupId);
                     }
                 } catch (error) {
-                    console.error(`Failed to send message or media to ${number}:`, error);
+                    // Pass silently or do nothing since logging is handled in sendMedia/sendMessage
                 }
                 // Add a delay between each message
                 await delay(500);  // Delay for 0.5 seconds
