@@ -89,13 +89,17 @@ router.post('/send-to-group', authController.verifyToken, upload.single('media')
             let group_n = recipient[0];
             if (number) {
                 number = convertPhoneNumber(number);
-                if (mediaFile) {
-                    const mediaPath = mediaFile.path;  // Use the uploaded file's path
-                    // Send media with the message as caption
-                    await whatsappController.sendMedia(index, number, mediaPath, message, group_n, messageGroupId);
-                } else {
-                    // Otherwise, send a text message
-                    await whatsappController.sendMessage(index, number, message, group_n, messageGroupId);
+                try {
+                    if (mediaFile) {
+                        const mediaPath = mediaFile.path;  // Use the uploaded file's path
+                        // Send media with the message as caption
+                        await whatsappController.sendMedia(index, number, mediaPath, message, group_n, messageGroupId);
+                    } else {
+                        // Otherwise, send a text message
+                        await whatsappController.sendMessage(index, number, message, group_n, messageGroupId);
+                    }
+                } catch (error) {
+                    console.error(`Failed to send message or media to ${number}:`, error);
                 }
                 // Add a delay between each message
                 await delay(500);  // Delay for 0.5 seconds
@@ -122,7 +126,7 @@ router.post('/send-to-group', authController.verifyToken, upload.single('media')
 
 function convertPhoneNumber(phoneNumber) {
     // Remove the hyphen and leading zero
-    return phoneNumber.replace('-', '').substring(1);;
+    return phoneNumber.replace(/-/g, '').substring(1);
 }
 
 module.exports = router;
