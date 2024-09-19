@@ -188,6 +188,7 @@ const MessageForm = ({ token }) => {
                 label="בחירת מספר WhatsApp"
                 onChange={(e) => setWhatsappNumber(e.target.value)}
                 required
+                value={whatsappNumber}
               >
                 {Array.from({ length: 1 }, (_, i) => (
                   <MenuItem key={i + 1} value={(i + 1).toString()}>
