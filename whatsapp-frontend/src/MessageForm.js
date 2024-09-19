@@ -189,7 +189,7 @@ const MessageForm = ({ token }) => {
                 onChange={(e) => setWhatsappNumber(e.target.value)}
                 required
               >
-                {Array.from({ length: 10 }, (_, i) => (
+                {Array.from({ length: 1 }, (_, i) => (
                   <MenuItem key={i + 1} value={(i + 1).toString()}>
                     {`WhatsApp מספר ${i + 1}`}
                   </MenuItem>
