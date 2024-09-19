@@ -74,7 +74,8 @@ const MessageForm = ({ token }) => {
     { value: '13', label: 'שני שרים שבחרה הממשלה' },
     { value: '14', label: 'חמישה חברי הכנסת שבחרה ועדת הכנסת' },
     { value: '15', label: 'עשר נשות ציבור שמינה השר לשירותי הדת' },
-    { value: '16', label: 'בדיקה' },
+    { value: '16', label: 'שמות נוספים' },
+    { value: '17', label: 'בדיקה' },
   ], []);
 
   // Handle file change and media preview
